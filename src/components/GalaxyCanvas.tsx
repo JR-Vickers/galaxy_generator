@@ -21,6 +21,7 @@ interface GalaxyCanvasProps {
   timeStep: number;
   defaultMass: number; // Consolidated mass parameter
   onPauseStateChange?: (isPaused: boolean) => void; // Callback for pause state
+  onStarCountChange?: (count: number) => void; // <-- Add prop type
 }
 
 // Define the type for the exposed handle
@@ -29,6 +30,7 @@ export interface GalaxyCanvasHandle {
   clearStars: () => void;
   saveImage: () => void;
   isCurrentlyPaused: () => boolean;
+  addStars: (newStars: Star[]) => void;
 }
 
 // Wrap component with forwardRef
@@ -40,6 +42,7 @@ const GalaxyCanvas = forwardRef<GalaxyCanvasHandle, GalaxyCanvasProps>((
     timeStep,
     defaultMass, // Use the consolidated mass prop
     onPauseStateChange, // Get callback prop
+    onStarCountChange, // <-- Get the prop
   },
   ref // The ref passed from the parent
 ) => {
@@ -91,6 +94,11 @@ const GalaxyCanvas = forwardRef<GalaxyCanvasHandle, GalaxyCanvasProps>((
       images.push(img);
     });
   }, []); // Run only once on mount
+
+  // Effect to report initial star count
+  useEffect(() => {
+    onStarCountChange?.(stars.length);
+  }, [onStarCountChange]); // Run when callback changes (effectively once on mount)
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -300,13 +308,24 @@ const GalaxyCanvas = forwardRef<GalaxyCanvasHandle, GalaxyCanvasProps>((
     document.body.removeChild(link);
   };
 
+  // Function to add multiple stars
+  const internalAddStars = (newStars: Star[]) => {
+      setStars(prevStars => [...prevStars, ...newStars]);
+  };
+
   // Expose functions via useImperativeHandle
   useImperativeHandle(ref, () => ({
     togglePause: internalTogglePause,
     clearStars: internalClearStars,
     saveImage: internalSaveImage,
     isCurrentlyPaused: () => isPaused, // Expose state getter
+    addStars: internalAddStars, // Expose the new function
   }));
+
+  // Update star count on adding single star or dragging
+  useEffect(() => {
+    onStarCountChange?.(stars.length);
+  }, [stars.length, onStarCountChange]); // Run whenever star count changes
 
   return (
     <canvas
