@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
-import { Button } from "@/components/ui/button";
 
 // Define the Star type
 export interface Star {
