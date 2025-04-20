@@ -36,7 +36,7 @@ import {
 const defaultGravity = 1;
 const defaultTimeStep = 0.1;
 const defaultMass = 10;
-const NAVBAR_HEIGHT = 50;
+const NAVBAR_HEIGHT = 100;
 
 // Helper function to generate spiral galaxy stars
 function generateSpiralGalaxyStars(
@@ -232,14 +232,21 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center relative">
       <NavigationMenu className="fixed top-0 left-0 w-full z-50 bg-background border-b" style={{ height: `${NAVBAR_HEIGHT}px` }}>
-        <NavigationMenuList className="container mx-auto h-full px-4 font-mono">
-            <NavigationMenuItem>
-              <span className="font-semibold mr-4">Galaxy Simulator v0.1</span>
+        <NavigationMenuList className="container mx-auto h-full px-8 font-mono flex items-center">
+            <NavigationMenuItem className="flex items-center mr-8">
+              <Image
+                src="/images/space.jpeg"
+                alt="Galaxy Icon"
+                width={NAVBAR_HEIGHT}
+                height={NAVBAR_HEIGHT}
+                className="mr-4 rounded"
+              />
+              <span className="font-semibold text-lg">Galaxy Simulator v0.1</span>
             </NavigationMenuItem>
             <NavigationMenuItem>
               <Dialog open={isInstructionsOpen} onOpenChange={setIsInstructionsOpen}>
                 <DialogTrigger asChild>
-                   <button className={`${navigationMenuTriggerStyle()}`} onClick={() => setIsInstructionsOpen(true)}>Instructions</button>
+                   <button className={`${navigationMenuTriggerStyle()} text-lg`} onClick={() => setIsInstructionsOpen(true)}>Instructions</button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                    <DialogHeader><DialogTitle>Instructions</DialogTitle></DialogHeader>
@@ -252,7 +259,7 @@ export default function Home() {
             </NavigationMenuItem>
              <NavigationMenuItem>
               <Link href="https://jarrettvickers.com/" legacyBehavior passHref>
-                <NavigationMenuLink className={`${navigationMenuTriggerStyle()}`} target="_blank" rel="noopener noreferrer">About Me</NavigationMenuLink>
+                <NavigationMenuLink className={`${navigationMenuTriggerStyle()} text-lg`} target="_blank" rel="noopener noreferrer">About Me</NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
         </NavigationMenuList>
