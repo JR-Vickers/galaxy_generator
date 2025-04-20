@@ -23,7 +23,9 @@
 # misc
 .DS_Store
 *.pem
-
+plan.md
+plan2.md
+galaxy_implementation_plan.md
 # debug
 npm-debug.log*
 yarn-debug.log*

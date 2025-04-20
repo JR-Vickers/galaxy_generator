@@ -1,103 +1,158 @@
+"use client";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuIndicator,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  NavigationMenuViewport,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu"
+import Link from "next/link";
+import GalaxyCanvas, { GalaxyCanvasHandle, Star } from "@/components/GalaxyCanvas";
+import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
+
+const defaultGravity = 1;
+const defaultTimeStep = 0.1;
+const defaultMass = 10;
+const NAVBAR_HEIGHT = 50;
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [isInstructionsOpen, setIsInstructionsOpen] = useState(false);
+  const [canvasWidth, setCanvasWidth] = useState(800);
+  const [canvasHeight, setCanvasHeight] = useState(600);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+  const [gravity, setGravity] = useState(defaultGravity);
+  const [timeStep, setTimeStep] = useState(defaultTimeStep);
+  const [mass, setMass] = useState(defaultMass);
+
+  const galaxyCanvasRef = useRef<GalaxyCanvasHandle>(null);
+  const [isActuallyPaused, setIsActuallyPaused] = useState(false);
+
+  useEffect(() => {
+    function handleResize() {
+      setCanvasWidth(window.innerWidth);
+      setCanvasHeight(window.innerHeight - NAVBAR_HEIGHT - 10);
+    }
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const handleGravityChange = useCallback((val: number[]) => setGravity(val[0]), []);
+  const handleTimeStepChange = useCallback((val: number[]) => setTimeStep(val[0]), []);
+  const handleMassChange = useCallback((val: number[]) => setMass(val[0]), []);
+
+  const handleTogglePause = () => {
+    galaxyCanvasRef.current?.togglePause();
+  };
+  const handleClearStars = () => galaxyCanvasRef.current?.clearStars();
+  const handleSaveImage = () => galaxyCanvasRef.current?.saveImage();
+  const handleResetParams = () => {
+      setGravity(defaultGravity);
+      setTimeStep(defaultTimeStep);
+      setMass(defaultMass);
+  };
+
+  const handlePauseStateChange = useCallback((paused: boolean) => {
+      setIsActuallyPaused(paused);
+  }, []);
+
+  return (
+    <main className="flex min-h-screen flex-col items-center relative">
+      <NavigationMenu className="fixed top-0 left-0 w-full z-50 bg-background border-b" style={{ height: `${NAVBAR_HEIGHT}px` }}>
+        <NavigationMenuList className="container mx-auto h-full px-4">
+            <NavigationMenuItem>
+              <span className="font-semibold mr-4">Galaxy Maker v0.1</span>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link href="/" legacyBehavior passHref>
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>Home</NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Dialog open={isInstructionsOpen} onOpenChange={setIsInstructionsOpen}>
+                <DialogTrigger asChild>
+                   <button className={navigationMenuTriggerStyle()} onClick={() => setIsInstructionsOpen(true)}>Instructions</button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                   <DialogHeader><DialogTitle>Instructions</DialogTitle></DialogHeader>
+                   <p>Click to add one star, drag to add many stars.</p>
+                   <p>Use mass slider to adjust the mass of new stars.</p>
+                   <p>Use gravity slider to increase the gravitational pull of all stars.</p>
+                   <p>Use the time step slider to adjust the speed of the simulation.</p>
+                </DialogContent>
+              </Dialog>
+            </NavigationMenuItem>
+             <NavigationMenuItem>
+              <Link href="https://jarrettvickers.com/" legacyBehavior passHref>
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>About Me</NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+        </NavigationMenuList>
+      </NavigationMenu>
+
+      <div
+        className="fixed left-4 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 border rounded-lg p-4 z-40 flex space-x-4 shadow-lg"
+        style={{ top: `${NAVBAR_HEIGHT + 16}px` }}
+      >
+          <div className="flex flex-col space-y-2">
+              <Button onClick={handleResetParams} variant="outline" size="sm" className="w-full justify-start">Reset Params</Button>
+              <Button onClick={handleTogglePause} size="sm" className="w-full justify-start">
+                  {isActuallyPaused ? 'Resume Sim' : 'Pause Sim'}
+              </Button>
+              <Button onClick={handleClearStars} variant="destructive" size="sm" className="w-full justify-start">Clear Stars</Button>
+              <Button onClick={handleSaveImage} size="sm" className="w-full justify-start">Save Galaxy</Button>
+          </div>
+
+          <div className="flex flex-col space-y-3 w-48">
+             <div className="space-y-1">
+               <Label htmlFor="mass-slider" className="text-xs flex justify-between">
+                   <span>Mass</span><span>({mass})</span>
+               </Label>
+               <Slider id="mass-slider" min={1} max={50} step={1} value={[mass]} onValueChange={handleMassChange} />
+             </div>
+             <div className="space-y-1">
+               <Label htmlFor="gravity-slider" className="text-xs flex justify-between">
+                   <span>Gravity</span><span>({gravity.toFixed(1)})</span>
+               </Label>
+               <Slider id="gravity-slider" min={0} max={5} step={0.1} value={[gravity]} onValueChange={handleGravityChange} />
+             </div>
+             <div className="space-y-1">
+                <Label htmlFor="timestep-slider" className="text-xs flex justify-between">
+                   <span>Time Step</span><span>({timeStep.toFixed(2)})</span>
+               </Label>
+               <Slider id="timestep-slider" min={0.01} max={1} step={0.01} value={[timeStep]} onValueChange={handleTimeStepChange} />
+             </div>
+          </div>
+      </div>
+
+      <div className="w-full" style={{ paddingTop: `${NAVBAR_HEIGHT}px` }}>
+        <GalaxyCanvas
+          ref={galaxyCanvasRef}
+          width={canvasWidth}
+          height={canvasHeight}
+          gravity={gravity}
+          timeStep={timeStep}
+          defaultMass={mass}
+          onPauseStateChange={handlePauseStateChange}
+        />
+      </div>
+    </main>
   );
 }
