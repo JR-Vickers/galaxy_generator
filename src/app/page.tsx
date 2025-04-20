@@ -2,36 +2,24 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuIndicator,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
-  NavigationMenuViewport,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
 import Link from "next/link";
 import GalaxyCanvas, { GalaxyCanvasHandle, Star } from "@/components/GalaxyCanvas";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 const defaultGravity = 1;
 const defaultTimeStep = 0.1;
@@ -55,7 +43,6 @@ function generateSpiralGalaxyStars(
   const stars: Star[] = [];
   const bulgeStarsCount = Math.floor(numStars * bulgeFraction);
   const armStarsCount = numStars - bulgeStarsCount;
-  const angleIncrement = (Math.PI * 2) / (armStarsCount / numArms);
   const armOffsetAngle = (Math.PI * 2) / numArms;
   const softening = 5; // Use a softening factor similar to the physics simulation
 
